@@ -1,0 +1,5 @@
+﻿  data_processing.cpp
+C:\Users\Kyung\source\repos\data_processing\data_processing\data_processing.cpp(34,21): warning C4838:  'int'에서 'char'(으)로의 변환에는 축소 변환이 필요합니다.
+C:\Users\Kyung\source\repos\data_processing\data_processing\data_processing.cpp(34,26): warning C4305:  '초기화 중': 'int'에서 'char'(으)로 잘립니다.
+C:\Users\Kyung\source\repos\data_processing\data_processing\data_processing.cpp(34,21): warning C4309:  '초기화 중': 상수 값이 잘립니다.
+  data_processing.vcxproj -> C:\Users\Kyung\source\repos\data_processing\Debug\data_processing.exe
