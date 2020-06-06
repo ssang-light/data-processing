@@ -2,6 +2,15 @@
 #include <vector>
 #include <fstream>
 #include <string.h>
+#include <sstream>
+#include <time.h>
+
+
+#define OV_SP_LIMIT 16.6 //  기준 = m/s
+#define RAPID_ACC 3.79 //급가속 기준 = 변화량이 8.5mph =  13.67km.h = 3.79 m/s
+#define RAPID_BRK 0.02 //급감속 기준 = 변화량이 6.5mph = 10.4km/h = 2.88 m/s
+
+
 
 using namespace std;
 
@@ -17,6 +26,69 @@ struct DATA
 	string speed;
 	string timestamp;
 };
+
+double is_avg_speed(vector<DATA> vec) {
+	
+	int sum = 0;
+	int total_index = vec.size();
+	double d = 0.0;
+	
+	for (int i = 0; i < vec.size(); i++) {
+		stringstream ssDouble(vec[i].speed);
+		ssDouble >> d;
+		sum += d;
+	}
+	return sum / total_index;
+}
+
+
+double is_total_time(vector<DATA> vec) {
+	double d_start, d_end = 0.0;
+	int size = vec.size()-1;
+	stringstream sDouble(vec[0].timestamp);
+	sDouble >> d_start;
+	stringstream saDouble(vec[size].timestamp);
+	saDouble >> d_end;
+	
+	return d_end - d_start;
+}
+int is_over_speed(vector<DATA> vec) {
+	int over_speed_time =0;
+	double speed = 0.0;
+	for (int i = 0; i < vec.size(); i++) {
+		stringstream speedDouble(vec[i].speed);
+		speedDouble >> speed;
+		if (speed> OV_SP_LIMIT) {
+			over_speed_time++;
+		}
+	}
+	return over_speed_time;
+}
+
+pair<int,int> rapid_speed_change(vector<DATA> vec) {
+	double rapid_speed = 0.0;
+	double speed_later = 0.0;
+	double speed_before = 0.0;
+	pair<int, int>warning; //warning <rapid_acc,rapid_break>
+
+	for (int i = 0; i < vec.size()-1; i++) {
+		stringstream beforeDouble(vec[i].speed);
+		stringstream laterDouble(vec[i+1].speed);
+		beforeDouble >> speed_before;
+		laterDouble >> speed_later;
+		rapid_speed = speed_later - speed_before;
+		if (rapid_speed > 0 && rapid_speed >= RAPID_ACC) {
+			warning.first++;
+		}
+		if (rapid_speed < 0 && abs(rapid_speed) >= RAPID_BRK) {
+			warning.second++;
+			cout << "vector number rapid break = " << i << endl;
+		}
+	}
+	return warning;
+}
+
+
 int main() {
 	
 	ifstream file;
@@ -162,18 +234,39 @@ int main() {
 				count = 1;
 				vec.push_back(data);
 				//count = 0;
-				cout << "in vec "<<index <<" : " << vec[index].accuracy << endl << endl;
-				cout << "in vec "<<index <<" : " << vec[index].altitude << endl << endl;
-				cout << "in vec "<< index << " : " <<vec[index].altitudeAccuracy << endl << endl;
-				cout << "in vec "<< index << " : " << vec[index].heading << endl << endl;
-				cout << "in vec "<< index << " : " << vec[index].latitude << endl << endl;
-				cout << "in vec "<< index << " : " << vec[index].longtitude << endl << endl;
-				cout << "in vec "<< index << " : " << vec[index].speed << endl << endl;
-				cout << "in vec "<< index << " : " << vec[index].timestamp << endl << endl;
+				cout << "in vec "<<index <<" : " <<"accuracy  " <<vec[index].accuracy << endl << endl;
+				cout << "in vec "<<index <<" : " <<"altitude  " <<vec[index].altitude << endl << endl;
+				cout << "in vec "<< index << " : " <<"altitudeAccuracy  " <<vec[index].altitudeAccuracy << endl << endl;
+				cout << "in vec "<< index << " : " <<"heading  "<<vec[index].heading << endl << endl;
+				cout << "in vec "<< index << " : " << "latitude  "<<vec[index].latitude << endl << endl;
+				cout << "in vec "<< index << " : " << "longtitude  "<<vec[index].longtitude << endl << endl;
+				cout << "in vec "<< index << " : " << "speed  "<< vec[index].speed << endl << endl;
+				cout << "in vec "<< index << " : " << "timestamp  "<< vec[index].timestamp << endl << endl;
 				cout << "================================================" << endl;
 				index++;
+				//:를 기준으로 파싱했기 때문에 마지막 패키지 하나는 검사만 하고 담기지 않는다.
+				//때문에 total vector size = 실제 들어온 패키지 -1
 			}
 		}
 	}
+
+
+
+	double avg_speed = is_avg_speed(vec);//평균 속도
+	double total_time = is_total_time(vec);//전체 운전 시간
+	int total_over_speed = is_over_speed(vec);//과속 횟수
+	int rapid_acc = rapid_speed_change(vec).first;//급가속 횟수
+	int rapid_brk = rapid_speed_change(vec).second;//급정거 횟수
+
+
+	//급가속 기준 = 변화량이 8.5mph =  13.67km.h = 3.79 m/s
+	//급감속 기준 = 변화량이 6.5mph = 10.4km/h = 2.88 m/s
+	cout << "vector size = " << vec.size() << endl;
+	cout << "avg speed = " << avg_speed << " total_time = " << total_time << endl;
+	cout << "overspeed_time = " << total_over_speed << endl;
+	cout << "rapid acceleration = " << rapid_acc << endl;
+	cout << "rapid_brk" << rapid_brk << endl;
+
+
 	return 0;
 }
