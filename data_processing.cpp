@@ -1,3 +1,15 @@
+/**********************************************************************************************************
+Parsing code related to the gps information of the Vehicle.
+-Parse the data to individual objects in DATA format
+-DATA format is consists of 8 components 
+-After parsing , various functions generate meaningful ata according to the DATA mainly related to speed
+
+-Product of org SSanglight 
+**********************************************************************************************************/
+
+
+
+
 #include <iostream>
 #include <vector>
 #include <fstream>
@@ -42,7 +54,7 @@ double is_avg_speed(vector<DATA> vec) {
 }
 
 
-double is_total_time(vector<DATA> vec) {
+double is_total_time(vector<DATA> vec) {//total time spent on driving
 	double d_start, d_end = 0.0;
 	int size = vec.size()-1;
 	stringstream sDouble(vec[0].timestamp);
@@ -52,7 +64,7 @@ double is_total_time(vector<DATA> vec) {
 	
 	return d_end - d_start;
 }
-int is_over_speed(vector<DATA> vec) {
+int is_over_speed(vector<DATA> vec) {//time of the overspeed according to the local speed limit
 	int over_speed_time =0;
 	double speed = 0.0;
 	for (int i = 0; i < vec.size(); i++) {
@@ -65,7 +77,7 @@ int is_over_speed(vector<DATA> vec) {
 	return over_speed_time;
 }
 
-pair<int,int> rapid_speed_change(vector<DATA> vec) {
+pair<int,int> rapid_speed_change(vector<DATA> vec) {//time of the rapid acc or brk according to the international standard
 	double rapid_speed = 0.0;
 	double speed_later = 0.0;
 	double speed_before = 0.0;
@@ -119,19 +131,18 @@ int main() {
 				}
 				
 				if(key==-1) {
-					//cout << "close" << str[i] << endl;
 					ending_point = i;
 				}
 				key = key * -1;
 			}
-			///////////////
+			
 			if (str[i] == ':'&& count ==0) {
 				cout << "================================================" << endl;
 				cout << "count value " << count << endl;
 
 				count++;
 			}
-			//////////////
+			//each of line is pared by the existence of the sign ":"
 			else if (str[i] == ':' && count ==1) {
 				//accuracy
 				cout << "count>>" << count << " " << str[i + 2] << endl;
@@ -234,6 +245,8 @@ int main() {
 				count = 1;
 				vec.push_back(data);
 				//count = 0;
+				//input all the material to the vector
+				//one single vector consists of components of DATA based on a single timestamp
 				cout << "in vec "<<index <<" : " <<"accuracy  " <<vec[index].accuracy << endl << endl;
 				cout << "in vec "<<index <<" : " <<"altitude  " <<vec[index].altitude << endl << endl;
 				cout << "in vec "<< index << " : " <<"altitudeAccuracy  " <<vec[index].altitudeAccuracy << endl << endl;
